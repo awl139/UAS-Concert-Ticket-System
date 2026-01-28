@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Concert Ticket System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .service-status {
+            margin: 10px 0;
+        }
+        .api-test {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="text-center text-white mb-4">
+                    <h1 class="display-4">🎵 Concert Ticket System</h1>
+                    <p class="lead">Microservices Architecture with NestJS, RabbitMQ & Docker</p>
+                </div>
+
+                <!-- Services Status -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">📊 Services Status</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="service-status">
+                                    <h6>User Service</h6>
+                                    <span id="user-status" class="badge bg-secondary">Checking...</span>
+                                    <small class="d-block text-muted">Port: 3001</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="service-status">
+                                    <h6>Order Service</h6>
+                                    <span id="order-status" class="badge bg-secondary">Checking...</span>
+                                    <small class="d-block text-muted">Port: 3002</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="service-status">
+                                    <h6>RabbitMQ</h6>
+                                    <span id="rabbitmq-status" class="badge bg-secondary">Checking...</span>
+                                    <small class="d-block text-muted">Port: 5672/15672</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="service-status">
+                                    <h6>MongoDB</h6>
+                                    <span id="mongodb-status" class="badge bg-secondary">Checking...</span>
+                                    <small class="d-block text-muted">Port: 27017</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Testing -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">👤 User Service API Test</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="api-test">
+                                    <h6>Register New User</h6>
+                                    <div class="mb-2">
+                                        <input type="text" id="reg-name" class="form-control mb-2" placeholder="Name" value="Test User">
+                                        <input type="email" id="reg-email" class="form-control mb-2" placeholder="Email" value="test@example.com">
+                                        <input type="password" id="reg-password" class="form-control mb-2" placeholder="Password" value="Password123">
+                                    </div>
+                                    <button class="btn btn-primary w-100" onclick="testRegister()">Test Register</button>
+                                </div>
+                                
+                                <div class="api-test">
+                                    <h6>Login</h6>
+                                    <div class="mb-2">
+                                        <input type="email" id="login-email" class="form-control mb-2" placeholder="Email" value="test@example.com">
+                                        <input type="password" id="login-password" class="form-control mb-2" placeholder="Password" value="Password123">
+                                    </div>
+                                    <button class="btn btn-success w-100" onclick="testLogin()">Test Login</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">🎫 Order Service API Test</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="api-test">
+                                    <h6>Create Concert Order</h6>
+                                    <div class="mb-2">
+                                        <select id="concert-select" class="form-select mb-2">
+                                            <option value="1">Coldplay World Tour - Rp 750,000</option>
+                                            <option value="2">Taylor Swift Eras Tour - Rp 1,200,000</option>
+                                            <option value="3">Blackpink Born Pink - Rp 1,500,000</option>
+                                        </select>
+                                        <input type="number" id="order-quantity" class="form-control mb-2" value="2" min="1" placeholder="Quantity">
+                                        <input type="text" id="order-userid" class="form-control mb-2" placeholder="User ID (get from register)">
+                                    </div>
+                                    <button class="btn btn-warning w-100" onclick="testCreateOrder()">Create Order</button>
+                                </div>
+                                
+                                <div class="api-test">
+                                    <h6>Trigger RabbitMQ Event</h6>
+                                    <button class="btn btn-info w-100 mb-2" onclick="triggerUserEvent()">Send "user.created" Event</button>
+                                    <small class="text-muted">Will register a new user to trigger RabbitMQ event</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">📋 API Response</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre id="api-result" class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto; display: none;"></pre>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">🔗 Quick Access Links</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <a href="http://localhost:3001/auth/health" class="btn btn-outline-primary w-100" target="_blank">
+                                    User Service API
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a href="http://localhost:3002/orders" class="btn btn-outline-success w-100" target="_blank">
+                                    Order Service API
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a href="http://localhost:15672" class="btn btn-outline-warning w-100" target="_blank">
+                                    RabbitMQ Management
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a href="#" class="btn btn-outline-dark w-100" onclick="checkAllServices()">
+                                    Refresh Status
+                                </a>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p><strong>RabbitMQ Credentials:</strong> <code>admin / admin123</code></p>
+                            <p><strong>MongoDB Connection:</strong> <code>mongodb://admin:password123@localhost:27017</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Log -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">📨 RabbitMQ Event Log</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="event-log" class="bg-dark text-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                            <div class="text-muted">Waiting for events...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update service status
+        async function updateServiceStatus(url, elementId, serviceName) {
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                const element = document.getElementById(elementId);
+                if (response.ok) {
+                    element.className = 'badge bg-success';
+                    element.textContent = '✅ Online';
+                    return true;
+                } else {
+                    element.className = 'badge bg-warning';
+                    element.textContent = '⚠️ Error';
+                    return false;
+                }
+            } catch (error) {
+                document.getElementById(elementId).className = 'badge bg-danger';
+                document.getElementById(elementId).textContent = '❌ Offline';
+                return false;
+            }
+        }
+
+        // Check MongoDB by trying to connect
+        async function checkMongoDB() {
+            try {
+                // Simple check by trying to fetch from user service (which uses MongoDB)
+                const response = await fetch('http://localhost:3001/auth/health');
+                if (response.ok) {
+                    document.getElementById('mongodb-status').className = 'badge bg-success';
+                    document.getElementById('mongodb-status').textContent = '✅ Online';
+                    return true;
+                }
+            } catch (error) {
+                document.getElementById('mongodb-status').className = 'badge bg-danger';
+                document.getElementById('mongodb-status').textContent = '❌ Offline';
+                return false;
+            }
+        }
+
+        // Check all services
+        async function checkAllServices() {
+            await updateServiceStatus('http://localhost:3001/auth/health', 'user-status', 'User Service');
+            await updateServiceStatus('http://localhost:3002/orders', 'order-status', 'Order Service');
+            
+            // Check RabbitMQ
+            try {
+                await fetch('http://localhost:15672');
+                document.getElementById('rabbitmq-status').className = 'badge bg-success';
+                document.getElementById('rabbitmq-status').textContent = '✅ Online';
+            } catch {
+                document.getElementById('rabbitmq-status').className = 'badge bg-danger';
+                document.getElementById('rabbitmq-status').textContent = '❌ Offline';
+            }
+            
+            await checkMongoDB();
+        }
+
+        // Show API result
+        function showResult(data) {
+            const resultElement = document.getElementById('api-result');
+            resultElement.style.display = 'block';
+            resultElement.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        // Add event to log
+        function addEventLog(message, type = 'info') {
+            const logElement = document.getElementById('event-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'info' ? 'text-info' : 'text-success';
+            
+            const eventDiv = document.createElement('div');
+            eventDiv.className = `small ${color}`;
+            eventDiv.innerHTML = `[${timestamp}] ${message}`;
+            
+            logElement.insertBefore(eventDiv, logElement.firstChild);
+            
+            // Keep only last 10 events
+            if (logElement.children.length > 10) {
+                logElement.removeChild(logElement.lastChild);
+            }
+        }
+
+        // Test Register
+        async function testRegister() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const response = await fetch('http://localhost:3001/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                showResult(data);
+                
+                if (data.success && data.data.user) {
+                    // Auto-fill user ID in order form
+                    document.getElementById('order-userid').value = data.data.user.id;
+                    addEventLog(`User registered: ${email} (ID: ${data.data.user.id})`, 'success');
+                    
+                    // Update event log with RabbitMQ message
+                    setTimeout(() => {
+                        addEventLog(`RabbitMQ event "user.created" sent for user: ${email}`, 'info');
+                    }, 500);
+                }
+            } catch (error) {
+                showResult('Error: ' + error.message);
+            }
+        }
+
+        // Test Login
+        async function testLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('http://localhost:3001/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                showResult(data);
+                
+                if (data.success) {
+                    addEventLog(`User logged in: ${email}`, 'success');
+                }
+            } catch (error) {
+                showResult('Error: ' + error.message);
+            }
+        }
+
+        // Test Create Order
+        async function testCreateOrder() {
+            const concertId = document.getElementById('concert-select').value;
+            const quantity = document.getElementById('order-quantity').value;
+            const userId = document.getElementById('order-userid').value;
+
+            if (!userId) {
+                alert('Please register first to get User ID');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3002/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ concertId, quantity, userId })
+                });
+                
+                const data = await response.json();
+                showResult(data);
+                
+                if (data.success) {
+                    addEventLog(`Order created: ${data.data.concertName} x${quantity}`, 'success');
+                    
+                    // Update event log with RabbitMQ message
+                    setTimeout(() => {
+                        addEventLog(`RabbitMQ event "order.created" sent for order ID: ${data.data._id}`, 'info');
+                    }, 500);
+                }
+            } catch (error) {
+                showResult('Error: ' + error.message);
+            }
+        }
+
+        // Trigger User Event (for RabbitMQ testing)
+        async function triggerUserEvent() {
+            const randomEmail = `user${Date.now()}@example.com`;
+            
+            try {
+                const response = await fetch('http://localhost:3001/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name: 'RabbitMQ Test User',
+                        email: randomEmail,
+                        password: 'Password123'
+                    })
+                });
+                
+                const data = await response.json();
+                showResult(data);
+                
+                if (data.success) {
+                    addEventLog(`Triggered "user.created" event for: ${randomEmail}`, 'info');
+                    alert('RabbitMQ event "user.created" has been triggered! Check RabbitMQ Management UI at http://localhost:15672');
+                }
+            } catch (error) {
+                showResult('Error: ' + error.message);
+            }
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            checkAllServices();
+            
+            // Auto-check status every 30 seconds
+            setInterval(checkAllServices, 30000);
+            
+            // Add some initial guidance
+            addEventLog('System started. Use the forms above to test the microservices.');
+            addEventLog('RabbitMQ Management: http://localhost:15672 (admin/admin123)');
+        }
+    </script>
+</body>
+</html>
