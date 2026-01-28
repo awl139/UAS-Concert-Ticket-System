@@ -13,13 +13,13 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # ← TAMBAH INI
     
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: user-service/package-lock.json
     
     - name: Install Dependencies (User Service)
       working-directory: ./user-service
@@ -27,11 +27,7 @@ jobs:
     
     - name: Run Tests (User Service)
       working-directory: ./user-service
-      run: npm test -- --passWithNoTests  # ← FIXED
-    
-    - name: Build User Service
-      working-directory: ./user-service
-      run: npm run build
+      run: npm test -- --passWithNoTests
 
   # Test Order Service
   test-order-service:
@@ -39,13 +35,13 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # ← TAMBAH INI
     
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: order-service/package-lock.json
     
     - name: Install Dependencies (Order Service)
       working-directory: ./order-service
@@ -53,11 +49,7 @@ jobs:
     
     - name: Run Tests (Order Service)
       working-directory: ./order-service
-      run: npm test -- --passWithNoTests  # ← FIXED
-    
-    - name: Build Order Service
-      working-directory: ./order-service
-      run: npm run build
+      run: npm test -- --passWithNoTests
 
   # Test Frontend
   test-frontend:
@@ -65,58 +57,42 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # ← TAMBAH INI
     
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
     
-    - name: Check if frontend has package.json
-      id: check_package
+    - name: Install Dependencies (Frontend)
+      working-directory: ./frontend
       run: |
-        if [ -f "frontend/package.json" ]; then
-          echo "has_package=true" >> $GITHUB_OUTPUT
+        if [ -f "package.json" ]; then
+          npm ci
         else
-          echo "has_package=false" >> $GITHUB_OUTPUT
+          echo "No package.json, skipping npm install"
         fi
     
-    - name: Install NPM Dependencies (if exists)
-      if: steps.check_package.outputs.has_package == 'true'
+    - name: Run Tests (Frontend)
       working-directory: ./frontend
-      run: npm ci
-    
-    - name: Run Frontend Tests (if exists)
-      if: steps.check_package.outputs.has_package == 'true'
-      working-directory: ./frontend
-      run: npm test -- --passWithNoTests  # ← FIXED
-    
-    - name: Skip frontend tests (no package.json)
-      if: steps.check_package.outputs.has_package == 'false'
-      run: echo "No package.json in frontend, skipping tests"
+      run: |
+        if [ -f "package.json" ]; then
+          npm test -- --passWithNoTests
+        else
+          echo "No package.json, skipping tests"
+          exit 0
+        fi
 
-  # Build and Push Docker Images (OPTIONAL - bisa di-skip)
-  build-and-push:
+  # Build Docker Images (Simplified)
+  build:
     needs: [test-user-service, test-order-service, test-frontend]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    
-    - name: Build Docker images
+    - name: Build with Docker Compose
       run: docker-compose build
-
-  # Deploy to Server (OPTIONAL - bisa di-skip)
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Skip deployment (no server config)
-      run: echo "Deployment skipped - no server configuration"
